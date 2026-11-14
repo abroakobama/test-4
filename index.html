@@ -112,6 +112,9 @@
       </div>
       <div class="h-6 w-px bg-slate-700/70 mx-0.5"></div>
       <div class="flex items-center gap-1.5 text-[11px] font-black">
+        <div id="hud-rank-badge" class="px-2 py-0.5 rounded-lg bg-amber-600/20 border border-amber-500/45 text-amber-200 flex items-center gap-1">
+          <span>🥉</span><span>100 RP</span>
+        </div>
         <div class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/40 text-amber-300 flex items-center gap-1">
           <span>🪙</span><span id="hud-coins">250</span>
         </div>
@@ -141,6 +144,9 @@
 
     <!-- Quick Action Navigation -->
     <div id="hub-quick-nav" class="glass-panel rounded-2xl p-1.5 flex items-center gap-1.5 pointer-events-auto shadow-2xl">
+      <button onclick="openModal('play-modes-modal')" title="Ranked & Public Arena Queues" class="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/50 text-rose-200 text-xs font-black transition">
+        ⚔️ <span class="hidden md:inline">Play</span>
+      </button>
       <button onclick="openSamsShop()" title="Sam's Forge [B]" class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/40 text-amber-200 text-xs font-black transition">
         ⚒️ <span class="hidden md:inline">Forge</span>
       </button>
@@ -368,6 +374,11 @@
         </div>
 
         <div class="flex flex-col gap-3">
+          <div id="finish-rp-banner" class="hidden p-2.5 rounded-2xl bg-purple-500/15 border border-purple-400/45 text-center">
+            <div id="finish-rp-delta" class="text-sm font-black text-amber-300">+28 RP</div>
+            <div id="finish-rp-tier" class="text-[11px] font-bold text-slate-200 mt-0.5">🥉 BRONZE • 128 RP</div>
+          </div>
+
           <div class="grid grid-cols-3 gap-2 text-center">
             <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
               <div class="text-[10px] font-bold text-slate-400">COINS</div>
@@ -470,7 +481,7 @@
             <span>🏆</span> HALL OF CHAMPIONS LEADERBOARDS
           </h2>
           <p class="text-xs text-slate-300 mt-0.5">
-            Live Real-Player Rankings across Wins, Kills, Level, Coins &amp; Diamonds (Fill-In Bots Excluded)
+            Live Real-Player Rankings across Wins, Kills, Ranked RP, Level, Coins &amp; Diamonds (Fill-In Bots Excluded)
           </p>
         </div>
         <button onclick="closeModal('leaderboards-modal')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-black transition">
@@ -478,6 +489,26 @@
         </button>
       </div>
       <div id="leaderboards-modal-grid" class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto custom-scroll"></div>
+    </div>
+  </div>
+
+  <!-- Ranked & Public Arena Queue Selector Modal -->
+  <div id="play-modes-modal" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6">
+    <div class="glass-panel rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border-rose-400/40 shadow-2xl">
+      <div class="p-4 sm:p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-transparent">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+            <span>⚔️</span> ARENA MATCHMAKING — RANKED &amp; PUBLIC
+          </h2>
+          <p class="text-xs text-slate-300 mt-0.5">
+            Compete in Ranked modes for RP &amp; Tier promotions, or enter Public Casual queues
+          </p>
+        </div>
+        <button onclick="closeModal('play-modes-modal')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-black transition">
+          ✕ Close
+        </button>
+      </div>
+      <div id="play-modes-body" class="p-4 sm:p-5 flex flex-col gap-4 overflow-y-auto custom-scroll"></div>
     </div>
   </div>
 
@@ -674,12 +705,42 @@
 
     // Nameless public PvP podium statue display loadouts
     const PODIUM_STATUES = [
-      { mode: '1v1', title: 'PUBLIC 1V1 DUEL', slot: 'main', main: 'excalibur_prime', shield: 'valkyrie_wing_aegis', armour: 'archon_regalia', aura: 'celestial_ascendant', color: 0x38bdf8, border: '#38bdf8' },
-      { mode: '2v2', title: 'PUBLIC 2V2 SKIRMISH', slot: 'main', main: 'sun_rapier', shield: 'kite_shield', armour: 'silver_vanguard', aura: 'glacial_mist', color: 0x34d399, border: '#34d399' },
-      { mode: '3v3', title: 'PUBLIC 3V3 CLASH', slot: 'close', close: 'crimson_katana', shield: 'spiked_targe', armour: 'crimson_shogun', aura: 'ember_spark', color: 0xfbbf24, border: '#fbbf24' },
-      { mode: '4v4', title: 'PUBLIC 4V4 BRAWL', slot: 'main', main: 'frost_greatsword', shield: 'tower_bulwark', armour: 'obsidian_dragon', aura: 'void_rift', color: 0xa855f7, border: '#a855f7' },
-      { mode: 'ffa', title: 'PUBLIC FREE-FOR-ALL', slot: 'close', close: 'twin_fangs', shield: 'oak_buckler', armour: 'obsidian_dragon', aura: 'void_rift', color: 0xf43f5e, border: '#f43f5e' }
+      { mode: '1v1', isRanked: false, title: 'PUBLIC 1V1 DUEL', slot: 'main', main: 'excalibur_prime', shield: 'valkyrie_wing_aegis', armour: 'archon_regalia', aura: 'celestial_ascendant', color: 0x38bdf8, border: '#38bdf8' },
+      { mode: '2v2', isRanked: false, title: 'PUBLIC 2V2 SKIRMISH', slot: 'main', main: 'sun_rapier', shield: 'kite_shield', armour: 'silver_vanguard', aura: 'glacial_mist', color: 0x34d399, border: '#34d399' },
+      { mode: '3v3', isRanked: false, title: 'PUBLIC 3V3 CLASH', slot: 'close', close: 'crimson_katana', shield: 'spiked_targe', armour: 'crimson_shogun', aura: 'ember_spark', color: 0xfbbf24, border: '#fbbf24' },
+      { mode: '4v4', isRanked: false, title: 'PUBLIC 4V4 BRAWL', slot: 'main', main: 'frost_greatsword', shield: 'tower_bulwark', armour: 'obsidian_dragon', aura: 'void_rift', color: 0xa855f7, border: '#a855f7' },
+      { mode: 'ffa', isRanked: false, title: 'PUBLIC FREE-FOR-ALL', slot: 'close', close: 'twin_fangs', shield: 'oak_buckler', armour: 'obsidian_dragon', aura: 'void_rift', color: 0xf43f5e, border: '#f43f5e' }
     ];
+
+    // Nameless Ranked PvP podium statue display loadouts
+    const RANKED_PODIUM_STATUES = [
+      { mode: 'ranked_1v1', baseMode: '1v1', isRanked: true, title: 'RANKED 1V1 DUEL', slot: 'main', main: 'excalibur_prime', shield: 'valkyrie_wing_aegis', armour: 'archon_regalia', aura: 'celestial_ascendant', color: 0xfbbf24, border: '#fbbf24' },
+      { mode: 'ranked_2v2', baseMode: '2v2', isRanked: true, title: 'RANKED 2V2 SKIRMISH', slot: 'main', main: 'frost_greatsword', shield: 'tower_bulwark', armour: 'silver_vanguard', aura: 'glacial_mist', color: 0x38bdf8, border: '#38bdf8' },
+      { mode: 'ranked_3v3', baseMode: '3v3', isRanked: true, title: 'RANKED 3V3 CLASH', slot: 'close', close: 'crimson_katana', shield: 'spiked_targe', armour: 'crimson_shogun', aura: 'ember_spark', color: 0xf43f5e, border: '#f43f5e' },
+      { mode: 'ranked_4v4', baseMode: '4v4', isRanked: true, title: 'RANKED 4V4 BRAWL', slot: 'close', close: 'twin_fangs', shield: 'tower_bulwark', armour: 'obsidian_dragon', aura: 'void_rift', color: 0xa855f7, border: '#a855f7' }
+    ];
+
+    const RANK_TIERS = [
+      { name: 'BRONZE', icon: '🥉', minRp: 0, maxRp: 299, badgeClass: 'bg-amber-700/25 border-amber-500/50 text-amber-200', hex: '#d97706' },
+      { name: 'SILVER', icon: '🥈', minRp: 300, maxRp: 599, badgeClass: 'bg-slate-400/20 border-slate-300/50 text-slate-200', hex: '#cbd5e1' },
+      { name: 'GOLD', icon: '🥇', minRp: 600, maxRp: 999, badgeClass: 'bg-amber-400/20 border-amber-300/60 text-amber-300', hex: '#fbbf24' },
+      { name: 'PLATINUM', icon: '💠', minRp: 1000, maxRp: 1499, badgeClass: 'bg-teal-400/20 border-teal-300/60 text-teal-200', hex: '#2dd4bf' },
+      { name: 'DIAMOND', icon: '💎', minRp: 1500, maxRp: 2099, badgeClass: 'bg-sky-400/20 border-sky-300/60 text-sky-200', hex: '#38bdf8' },
+      { name: 'GRANDMASTER', icon: '👑', minRp: 2100, maxRp: 999999, badgeClass: 'bg-purple-500/25 border-purple-400/65 text-purple-200', hex: '#c084fc' }
+    ];
+
+    function getRankInfo(rpVal) {
+      const rp = Math.max(0, Math.floor(rpVal || 0));
+      let current = RANK_TIERS[0];
+      let nextTier = RANK_TIERS[1];
+      for (let i = 0; i < RANK_TIERS.length; i++) {
+        if (rp >= RANK_TIERS[i].minRp) {
+          current = RANK_TIERS[i];
+          nextTier = RANK_TIERS[i + 1] || null;
+        }
+      }
+      return { ...current, rp, nextTier };
+    }
 
     function getItemById(id) {
       for (const cat of Object.keys(CATALOG)) {
@@ -699,6 +760,7 @@
       diamonds: 15,
       wins: 0,
       kills: 0,
+      rp: 100,
       skillPoints: 0,
       equipped: {
         main: 'iron_longsword',
@@ -859,6 +921,7 @@
             name: profile.name,
             wins: profile.wins,
             kills: profile.kills,
+            rp: profile.rp,
             coins: profile.coins,
             diamonds: profile.diamonds,
             level: profile.level,
@@ -1025,7 +1088,7 @@
     }
 
     // =========================================================================
-    // 5. 5-CATEGORY REAL-PLAYER LEADERBOARDS (WINS, KILLS, LEVEL, COINS, DIAMONDS)
+    // 5. 6-CATEGORY REAL-PLAYER LEADERBOARDS (WINS, KILLS, RANK, LEVEL, COINS, DIAMONDS)
     // =========================================================================
     const LEADERBOARD_CATEGORIES = [
       {
@@ -1045,6 +1108,18 @@
         accentInt: 0xf43f5e,
         badgeClass: 'border-rose-400/50 bg-rose-500/10 text-rose-300',
         format: (v) => v + ' ⚔️'
+      },
+      {
+        key: 'rp',
+        title: 'HIGHEST RANK',
+        icon: '👑',
+        accentHex: '#c084fc',
+        accentInt: 0xc084fc,
+        badgeClass: 'border-purple-400/55 bg-purple-500/15 text-purple-200',
+        format: (v) => {
+          const info = getRankInfo(v);
+          return info.icon + ' ' + info.rp + ' RP';
+        }
       },
       {
         key: 'level',
@@ -1083,6 +1158,7 @@
           name: profile.name + ' (You)',
           wins: profile.wins || 0,
           kills: profile.kills || 0,
+          rp: profile.rp || 0,
           level: profile.level || 1,
           coins: profile.coins || 0,
           diamonds: profile.diamonds || 0,
@@ -1095,6 +1171,7 @@
             name: p.name || 'Player',
             wins: p.wins || 0,
             kills: p.kills || 0,
+            rp: p.rp || 0,
             level: p.level || 1,
             coins: p.coins || 0,
             diamonds: p.diamonds || 0,
@@ -1181,10 +1258,16 @@
 
     function updateHUD() {
       const stats = computeStats();
+      const rankInfo = getRankInfo(profile.rp);
       document.getElementById('hud-level').textContent = profile.level;
       document.getElementById('hud-player-name').textContent = profile.name;
       document.getElementById('hud-xp-text').textContent = profile.xp + ' / ' + profile.xpNext + ' XP';
       document.getElementById('hud-xp-bar').style.width = Math.min(100, (profile.xp / profile.xpNext) * 100) + '%';
+      const rankBadge = document.getElementById('hud-rank-badge');
+      if (rankBadge) {
+        rankBadge.className = 'px-2 py-0.5 rounded-lg border flex items-center gap-1 ' + rankInfo.badgeClass;
+        rankBadge.innerHTML = '<span>' + rankInfo.icon + '</span><span>' + rankInfo.rp + ' RP</span>';
+      }
       document.getElementById('hud-coins').textContent = profile.coins;
       document.getElementById('hud-diamonds').textContent = profile.diamonds;
 
@@ -2298,11 +2381,12 @@
 
       // Smooth circular arc positioned directly along the blue floor ring (r = 18.475), facing inward toward (centerX, centerZ)
       const arcRadius = 18.475;
-      const midAngle = -0.14;
-      const angleStep = 0.205;
+      const midAngle = -0.08;
+      const angleStep = 0.175;
+      const midOffset = (LEADERBOARD_CATEGORIES.length - 1) / 2;
 
       LEADERBOARD_CATEGORIES.forEach((cat, idx) => {
-        const theta = midAngle + (idx - 2) * angleStep;
+        const theta = midAngle + (idx - midOffset) * angleStep;
         const worldX = centerX + Math.cos(theta) * arcRadius;
         const worldZ = centerZ + Math.sin(theta) * arcRadius;
         const monument = createLeaderboardMonument(worldX, worldZ, cat, worldX, worldZ, centerX, centerZ);
@@ -2320,13 +2404,13 @@
       return g;
     }
 
-    // NAMELESS PUBLIC PVP ARENA PODIUMS
+    // NAMELESS PUBLIC & RANKED PVP ARENA PODIUMS
     function createPublicArenaPodium(x, z, spec, onTrigger) {
       const g = new THREE.Group();
       g.position.set(x, 0, z);
       g.lookAt(0, 0, 12);
 
-      const baseMat = polyMat(0x1e293b, { roughness: 0.48, metalness: 0.55 });
+      const baseMat = polyMat(spec.isRanked ? 0x2e1065 : 0x1e293b, { roughness: 0.42, metalness: 0.65 });
       const glowMat = polyMat(spec.color, { emissive: spec.color, emissiveIntensity: 1.55 });
 
       const tier1 = new THREE.Mesh(new THREE.CylinderGeometry(1.85, 2.15, 0.32, 8), baseMat);
@@ -2334,7 +2418,7 @@
       tier1.receiveShadow = true;
       const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.36, 8), baseMat);
       tier2.position.y = 0.5;
-      addPolyEdgeLines(tier2, spec.color, 0.35);
+      addPolyEdgeLines(tier2, spec.color, 0.4);
 
       const haloRing = new THREE.Mesh(new THREE.RingGeometry(1.55, 1.8, 16), glowMat);
       haloRing.rotation.x = -Math.PI / 2;
@@ -2346,14 +2430,16 @@
 
       g.add(tier1, tier2, haloRing, statueRig.root);
 
-      const sign = createBannerSign(spec.title, '#090d16', spec.border);
+      const sign = createBannerSign(spec.title, spec.isRanked ? '#1e1b4b' : '#090d16', spec.border);
       sign.position.set(0, 3.65, 0);
       g.add(sign);
 
       hubInteractables.push({
         pos: new THREE.Vector3(x, 0, z),
         radius: 3.1,
-        label: 'Join ' + spec.title + ' (Real Players)',
+        label: spec.isRanked
+          ? ('Join ' + spec.title + ' (Competitive RP)')
+          : ('Join ' + spec.title + ' (Real Players)'),
         action: onTrigger
       });
 
@@ -2446,29 +2532,29 @@
 
       // Forge Bounty Stand with Seller Behind Counter
       worldGroup.add(createVendorStandWithSeller(
-        -16.5, -6, Math.PI * 0.5, 0x34d399,
-        '📜 FORGE BOUNTY STAND [F]',
-        { slot: 'ranged', ranged: 'star_bow', shield: 'kite_shield', armour: 'obsidian_dragon', aura: 'void_rift' },
+        -15.5, -10.5, Math.PI * 0.65, 0x10b981,
+        '📜 FORGE BOUNTIES [F]',
+        { slot: 'ranged', ranged: 'star_bow', shield: 'oak_buckler', armour: 'silver_vanguard', aura: 'none' },
         'bounty'
       ));
-      addObstacle(-16.5, -6, 3.4);
+      addObstacle(-15.5, -10.5, 3.4);
       hubInteractables.push({
-        pos: new THREE.Vector3(-12.5, 0, -6),
+        pos: new THREE.Vector3(-12.2, 0, -11.6),
         radius: 3.8,
-        label: 'Inspect Forge Bounties',
+        label: 'View Forge Bounties & Quests',
         action: () => openModal('quests-modal')
       });
 
-      // 5-Monument Hall of Champions Leaderboards (Wins, Kills, Level, Coins & Diamonds)
+      // 6-Monument Hall of Champions Leaderboards (Wins, Kills, Rank, Level, Coins & Diamonds)
       worldGroup.add(createHallOfChampionsBasilica(0, 0));
       hubInteractables.push({
-        pos: new THREE.Vector3(15.5, 0, -2.2),
+        pos: new THREE.Vector3(15.5, 0, -1.4),
         radius: 6.8,
-        label: 'View All Leaderboards (Wins, Kills, Level, Coins & Diamonds)',
+        label: 'View All Leaderboards (Wins, Kills, Rank, Level, Coins & Diamonds)',
         action: () => openModal('leaderboards-modal')
       });
 
-      // 5 Nameless Public PvP Arena Podiums
+      // 5 Nameless Public PvP Arena Podiums (North Arc)
       const podiumCoords = [
         [-14.2, -21.8],
         [-7.1, -24.8],
@@ -2478,7 +2564,20 @@
       ];
       PODIUM_STATUES.forEach((spec, idx) => {
         const [px, pz] = podiumCoords[idx];
-        worldGroup.add(createPublicArenaPodium(px, pz, spec, () => queueForMatch(spec.mode, spec.title)));
+        worldGroup.add(createPublicArenaPodium(px, pz, spec, () => queueForMatch(spec.mode, spec.title, false)));
+        addObstacle(px, pz, 1.95);
+      });
+
+      // 4 Nameless Ranked PvP Arena Podiums (South Arc flanking Arrival Sanctuary)
+      const rankedPodiumCoords = [
+        [-14.5, 22.0],
+        [-8.5, 25.2],
+        [8.5, 25.2],
+        [14.5, 22.0]
+      ];
+      RANKED_PODIUM_STATUES.forEach((spec, idx) => {
+        const [px, pz] = rankedPodiumCoords[idx];
+        worldGroup.add(createPublicArenaPodium(px, pz, spec, () => queueForMatch(spec.mode, spec.title, true)));
         addObstacle(px, pz, 1.95);
       });
     }
@@ -2779,45 +2878,57 @@
     }
 
     // =========================================================================
-    // 9. COMBAT, DIRECTIONAL 3D SLASH ARCS, PROJECTILES & FILL-IN BOT GENERATOR
+    // 9. COMBAT, WEAPON SWITCHING, ABILITIES, PROJECTILES & RARITY BOT GEAR
     // =========================================================================
     let combatants = [];
     let projectiles = [];
     let slashEffects = [];
 
-    function pickRandomByRarity(pool) {
-      const weights = { Common: 45, Rare: 30, Epic: 17, Legendary: 8 };
-      const total = pool.reduce((sum, item) => sum + (weights[item.rarity] || 20), 0);
-      let roll = Math.random() * total;
-      for (const item of pool) {
-        roll -= (weights[item.rarity] || 20);
-        if (roll <= 0) return item;
-      }
-      return pool[0];
-    }
-
     function generateRarityWeightedBotLoadout() {
-      const slotPool = ['main', 'close', 'ranged'];
-      const slot = slotPool[Math.floor(Math.random() * slotPool.length)];
-      const mainItem = pickRandomByRarity(CATALOG.main);
-      const closeItem = pickRandomByRarity(CATALOG.close);
-      const rangedItem = pickRandomByRarity(CATALOG.ranged);
-      const shieldItem = pickRandomByRarity(CATALOG.shield);
-      const armourItem = pickRandomByRarity(CATALOG.armour);
-      const auraItem = pickRandomByRarity(CATALOG.aura);
+      const weights = [
+        { rarity: 'Common', weight: 50 },
+        { rarity: 'Rare', weight: 30 },
+        { rarity: 'Epic', weight: 15 },
+        { rarity: 'Legendary', weight: 5 }
+      ];
+      function pickWeightedItem(pool) {
+        const roll = Math.random() * 100;
+        let acc = 0;
+        let chosenRarity = 'Common';
+        for (const w of weights) {
+          acc += w.weight;
+          if (roll <= acc) {
+            chosenRarity = w.rarity;
+            break;
+          }
+        }
+        const matches = pool.filter(i => i.rarity === chosenRarity);
+        const list = matches.length ? matches : pool;
+        return list[Math.floor(Math.random() * list.length)];
+      }
 
-      const activeWep = slot === 'main' ? mainItem : slot === 'close' ? closeItem : rangedItem;
+      const slots = ['main', 'close', 'ranged'];
+      const slot = slots[Math.floor(Math.random() * slots.length)];
+      const mainItem = pickWeightedItem(CATALOG.main);
+      const closeItem = pickWeightedItem(CATALOG.close);
+      const rangedItem = pickWeightedItem(CATALOG.ranged);
+      const shieldItem = pickWeightedItem(CATALOG.shield);
+      const armourItem = pickWeightedItem(CATALOG.armour);
+      const auraItem = pickWeightedItem(CATALOG.aura);
+
+      const equipped = {
+        main: mainItem.id,
+        close: closeItem.id,
+        ranged: rangedItem.id,
+        shield: shieldItem.id,
+        armour: armourItem.id,
+        aura: auraItem.id
+      };
+      const activeWep = getItemById(equipped[slot]) || mainItem;
       return {
+        equipped,
         slot,
         activeWep,
-        equipped: {
-          main: mainItem.id,
-          close: closeItem.id,
-          ranged: rangedItem.id,
-          shield: shieldItem.id,
-          armour: armourItem.id,
-          aura: auraItem.id
-        },
         hpBonus: armourItem.hpBonus || 0,
         speedBonus: armourItem.speedBonus || 0
       };
@@ -2827,264 +2938,263 @@
       if (!['main', 'close', 'ranged'].includes(slot)) return;
       state.activeSlot = slot;
       rebuildLocalWarrior();
+      syncLocalRealPlayerEntry();
       updateHUD();
     }
 
-    function spawnSlashArcEffect(origin, yaw, colorHex = 0x38bdf8, comboStep = 0, grip = '1h') {
-      const slashGroup = new THREE.Group();
-      const scale = grip === '2h' ? 2.15 : grip === 'dual' ? 1.55 : 1.75;
-      slashGroup.position.set(origin.x - Math.sin(yaw) * 1.15, origin.y + 1.25, origin.z - Math.cos(yaw) * 1.15);
-      slashGroup.rotation.y = yaw;
+    function spawnSlashArcEffect(pos, yaw, colorHex, comboStep = 0, grip = '1h') {
+      if (!fxGroup) return;
+      const group = new THREE.Group();
+      group.position.set(pos.x, pos.y + 1.25, pos.z);
+      group.rotation.y = yaw;
 
-      if (comboStep === 1) {
-        slashGroup.rotation.z = 0.72;
-      } else if (comboStep === 2) {
-        slashGroup.rotation.z = Math.PI / 2;
-      } else {
-        slashGroup.rotation.z = -0.58;
-      }
+      const radius = grip === '2h' ? 2.35 : 1.85;
+      const outerMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.9,
+        side: THREE.DoubleSide
+      });
+      const coreMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 1.0,
+        side: THREE.DoubleSide
+      });
 
-      const outerArc = new THREE.Mesh(
-        new THREE.RingGeometry(0.75 * scale, 1.45 * scale, 16, 1, -Math.PI * 0.48, Math.PI * 0.96),
-        new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
-      );
+      const outerArc = new THREE.Mesh(new THREE.RingGeometry(radius * 0.62, radius, 16, 1, Math.PI * 0.15, Math.PI * 0.7), outerMat);
       outerArc.rotation.x = -Math.PI / 2;
+      if (comboStep === 1) outerArc.rotation.z = 0.35;
+      else if (comboStep === 2) outerArc.rotation.z = -0.35;
 
-      const coreArc = new THREE.Mesh(
-        new THREE.RingGeometry(0.95 * scale, 1.28 * scale, 16, 1, -Math.PI * 0.42, Math.PI * 0.84),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
-      );
+      const coreArc = new THREE.Mesh(new THREE.RingGeometry(radius * 0.78, radius * 0.94, 16, 1, Math.PI * 0.2, Math.PI * 0.6), coreMat);
       coreArc.rotation.x = -Math.PI / 2;
-      coreArc.position.y = 0.02;
+      coreArc.rotation.z = outerArc.rotation.z;
 
-      slashGroup.add(outerArc, coreArc);
-
-      for (let i = 0; i < 6; i++) {
-        const spark = new THREE.Mesh(
-          new THREE.OctahedronGeometry(0.08, 0),
-          new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? colorHex : 0xffffff })
-        );
-        const a = -0.9 + (i / 5) * 1.8;
-        spark.position.set(Math.sin(a) * 1.3 * scale, (Math.random() - 0.5) * 0.3, -Math.cos(a) * 1.3 * scale);
-        slashGroup.add(spark);
-      }
-
-      fxGroup.add(slashGroup);
-      slashEffects.push({ group: slashGroup, outerMat: outerArc.material, coreMat: coreArc.material, life: 0.24 });
+      group.add(outerArc, coreArc);
+      fxGroup.add(group);
+      slashEffects.push({ group, outerMat, coreMat, life: 0.24 });
     }
 
-    function spawnArrowProjectile(startPos, dir, team, dmg, ownerId = null) {
-      const arrow = new THREE.Mesh(
-        new THREE.ConeGeometry(0.11, 0.65, 5),
-        new THREE.MeshBasicMaterial({ color: team === 'blue' ? 0x38bdf8 : 0xf43f5e })
+    function spawnArrowProjectile(origin, dir, team, dmg, ownerId) {
+      if (!fxGroup) return;
+      const arrowGroup = new THREE.Group();
+      const colorHex = team === 'blue' ? 0x38bdf8 : 0xf43f5e;
+      const shaft = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 1.05, 5),
+        new THREE.MeshBasicMaterial({ color: 0xf8fafc })
       );
-      arrow.position.copy(startPos);
-      arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
-      fxGroup.add(arrow);
+      shaft.rotation.x = Math.PI / 2;
+      const head = new THREE.Mesh(
+        new THREE.ConeGeometry(0.08, 0.24, 4),
+        new THREE.MeshBasicMaterial({ color: colorHex })
+      );
+      head.rotation.x = Math.PI / 2;
+      head.position.z = 0.56;
+      arrowGroup.add(shaft, head);
+
+      const normDir = dir.clone().normalize();
+      arrowGroup.position.copy(origin);
+      arrowGroup.lookAt(origin.clone().add(normDir));
+      fxGroup.add(arrowGroup);
+
       projectiles.push({
-        mesh: arrow,
-        pos: startPos.clone(),
-        vel: dir.clone().normalize().multiplyScalar(42),
-        dmg,
+        mesh: arrowGroup,
+        pos: origin.clone(),
+        vel: normDir.multiplyScalar(38),
         team,
+        dmg,
         ownerId,
         life: 1.6
       });
     }
 
-    function performAttack() {
-      if (state.attackCooldown > 0 || isAnyModalOpen()) return;
-      const slot = state.activeSlot;
-      const wep = getItemById(profile.equipped[slot]) || CATALOG[slot][0];
-      const dmgMult = state.berserkTimer > 0 ? 1.45 : 1.0;
-      const finalDmg = Math.round(wep.dmg * dmgMult);
+    function damageCombatant(target, amount, isCrit = false) {
+      if (!target || target.hp <= 0) return;
+      target.hp = Math.max(0, target.hp - amount);
+      if (target.overhead) target.overhead.redraw(target.hp, target.maxHp);
+      spawnFloatingDamage(
+        target.pos,
+        amount,
+        isCrit ? 'text-amber-300' : 'text-sky-300',
+        isCrit ? 'CRIT -' : '-'
+      );
+      AudioFX.play('hit');
 
-      const currentStep = state.comboStep;
-      state.attackTimer = 0.3;
+      if (target.hp === 0) {
+        if (target.rig && target.rig.root) target.rig.root.visible = false;
+        if (target.team === 'red' && state.screen === 'arena' && state.matchConfig && !state.matchConfig.roundEnding) {
+          state.matchKills += 1;
+          profile.kills += 1;
+          state.blueScore += 1;
+          document.getElementById('blue-score').textContent = String(state.blueScore);
+          advanceQuest('q1', 1);
+          syncLocalRealPlayerEntry();
+
+          const remainingRed = combatants.filter(c => c.team === 'red' && c.hp > 0).length;
+          if (state.blueScore >= state.matchConfig.targetWins) {
+            state.matchConfig.roundEnding = true;
+            finishArenaMatch(true);
+          } else if (remainingRed === 0) {
+            state.matchConfig.roundEnding = true;
+            showToast('🏆 Round ' + state.matchConfig.roundNum + ' Won! Next round starting...');
+            setTimeout(() => {
+              if (state.screen === 'arena') startNewRound();
+            }, 1100);
+          }
+        }
+      }
+    }
+
+    function damageLocalPlayer(amount) {
+      if (state.screen !== 'arena' || state.hp <= 0) return;
+      const stats = computeStats();
+      const finalDmg = state.blocking ? Math.max(1, Math.round(amount * (1 - stats.blockPct))) : amount;
+      if (state.blocking) AudioFX.play('block');
+      else AudioFX.play('hit');
+
+      state.hp = Math.max(0, state.hp - finalDmg);
+      spawnFloatingDamage(state.pos, finalDmg, 'text-rose-400', '-');
+
+      if (state.hp === 0 && state.matchConfig && !state.matchConfig.roundEnding) {
+        state.redScore += 1;
+        document.getElementById('red-score').textContent = String(state.redScore);
+        state.matchConfig.roundEnding = true;
+        if (state.redScore >= state.matchConfig.targetWins) {
+          finishArenaMatch(false);
+        } else {
+          showToast('💀 Round Lost! Next round starting...');
+          setTimeout(() => {
+            if (state.screen === 'arena') startNewRound();
+          }, 1100);
+        }
+      }
+    }
+
+    function performAttack() {
+      if (isAnyModalOpen() || state.attackCooldown > 0) return;
+      if (state.screen === 'arena' && state.hp <= 0) return;
+
+      const wep = getItemById(profile.equipped[state.activeSlot]) || CATALOG.main[0];
+      state.blocking = false;
+      state.emoteId = null;
       state.attackCooldown = wep.cd;
       state.attackCooldownMax = wep.cd;
-      state.comboStep = (state.comboStep + 1) % 3;
-      AudioFX.play('swing');
+      state.attackTimer = 0.3;
 
-      const aimPitch = Math.max(-0.85, Math.min(0.85, state.pitch));
-      const fwd = new THREE.Vector3(
-        -Math.sin(state.yaw) * Math.cos(aimPitch),
-        -Math.sin(aimPitch),
-        -Math.cos(state.yaw) * Math.cos(aimPitch)
-      ).normalize();
+      state.comboStep = (state.comboStep % 3) + 1;
+      state.comboCount += 1;
+      state.comboTimer = 2.4;
 
-      if (slot === 'ranged') {
+      const furyMult = state.berserkTimer > 0 ? 1.45 : 1.0;
+      const comboMult = 1 + Math.min(0.4, (state.comboCount - 1) * 0.08);
+      const dmg = Math.round(wep.dmg * furyMult * comboMult);
+      const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+
+      if (wep.grip === 'ranged') {
         AudioFX.play('shoot');
-        const startPos = state.pos.clone().add(new THREE.Vector3(0, 1.35, 0)).addScaledVector(fwd, 0.9);
-        spawnArrowProjectile(startPos, fwd, 'blue', finalDmg, profile.id);
-        if (mpChannel) {
+        const shootDir = new THREE.Vector3(
+          -Math.sin(state.yaw) * Math.cos(state.pitch * 0.65),
+          -Math.sin(state.pitch * 0.65),
+          -Math.cos(state.yaw) * Math.cos(state.pitch * 0.65)
+        ).normalize();
+        const origin = state.pos.clone().add(new THREE.Vector3(0, 1.45, 0)).addScaledVector(forward, 0.7);
+        spawnArrowProjectile(origin, shootDir, 'blue', dmg, profile.id);
+        if (mpChannel && state.screen === 'arena') {
           try {
             mpChannel.postMessage({
               type: 'shoot',
               shooterId: profile.id,
-              origin: { x: startPos.x, y: startPos.y, z: startPos.z },
-              dir: { x: fwd.x, y: fwd.y, z: fwd.z },
-              dmg: finalDmg
+              origin: { x: origin.x, y: origin.y, z: origin.z },
+              dir: { x: shootDir.x, y: shootDir.y, z: shootDir.z },
+              dmg
             });
           } catch (e) {}
         }
-        return;
-      }
+      } else {
+        AudioFX.play('swing');
+        spawnSlashArcEffect(state.pos, state.yaw, wep.color, state.comboStep, wep.grip);
+        if (mpChannel && state.screen === 'arena') {
+          try {
+            mpChannel.postMessage({
+              type: 'attack',
+              attackerId: profile.id,
+              attackerName: profile.name,
+              pos: { x: state.pos.x, y: state.pos.y, z: state.pos.z },
+              yaw: state.yaw,
+              color: wep.color,
+              comboStep: state.comboStep,
+              grip: wep.grip,
+              range: wep.range,
+              dmg
+            });
+          } catch (e) {}
+        }
 
-      spawnSlashArcEffect(state.pos, state.yaw, wep.color, currentStep, wep.grip);
-
-      if (mpChannel) {
-        try {
-          mpChannel.postMessage({
-            type: 'attack',
-            attackerId: profile.id,
-            attackerName: profile.name,
-            pos: { x: state.pos.x, y: state.pos.y, z: state.pos.z },
-            yaw: state.yaw,
-            range: wep.range,
-            dmg: finalDmg,
-            color: wep.color,
-            comboStep: currentStep,
-            grip: wep.grip
-          });
-        } catch (e) {}
-      }
-
-      if (state.screen === 'arena') {
-        const flatFwd = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
-        combatants.forEach(c => {
-          if (c.hp <= 0 || c.team === 'blue') return;
-          const toEnemy = c.pos.clone().sub(state.pos);
-          toEnemy.y = 0;
-          const dist = toEnemy.length();
-          if (dist <= wep.range) {
-            const dot = dist > 0.01 ? flatFwd.dot(toEnemy.normalize()) : 1;
-            if (dot >= 0.35) {
-              state.comboCount += 1;
-              state.comboTimer = 2.6;
-              const comboBonus = state.comboCount >= 3 ? Math.round(finalDmg * 0.2) : 0;
-              damageCombatant(c, finalDmg + comboBonus, false);
+        if (state.screen === 'arena') {
+          const hitRange = (wep.range || 3.3) + 0.65;
+          combatants.forEach(c => {
+            if (c.hp <= 0 || c.team !== 'red') return;
+            const toTarget = new THREE.Vector3().subVectors(c.pos, state.pos);
+            toTarget.y = 0;
+            const dist = toTarget.length();
+            if (dist <= hitRange) {
+              toTarget.normalize();
+              if (forward.dot(toTarget) > 0.25) {
+                damageCombatant(c, dmg, state.comboStep === 3);
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
 
-    function useAbility(idx) {
-      if (state.abilityCooldowns[idx] > 0 || isAnyModalOpen()) return;
-      const ab = getItemById(profile.abilities[idx]);
+    function useAbility(slotIdx) {
+      if (isAnyModalOpen() || state.abilityCooldowns[slotIdx] > 0) return;
+      const ab = getItemById(profile.abilities[slotIdx]);
       if (!ab) return;
 
-      state.abilityCooldowns[idx] = ab.cd;
+      state.abilityCooldowns[slotIdx] = ab.cd;
       if (ab.id === 'shadow_dash') {
-        state.dashTimer = 0.24;
+        state.dashTimer = 0.28;
         AudioFX.play('swing');
-        showToast('💨 Shadow Dash!');
+        showToast('⚡ Shadow Dash!');
       } else if (ab.id === 'berserk_roar') {
         state.berserkTimer = 5.0;
-        AudioFX.play('hit');
-        showToast('🔥 Forge Fury (+45% DMG for 5s)!');
+        AudioFX.play('victory');
+        showToast('🔥 Forge Fury Active! (+45% DMG for 5s)');
       } else if (ab.id === 'whirlwind') {
-        state.attackTimer = 0.34;
         AudioFX.play('swing');
-        spawnSlashArcEffect(state.pos, state.yaw, 0xfbbf24, 2, '2h');
+        spawnSlashArcEffect(state.pos, state.yaw, 0xfbbf24, 1, '2h');
+        spawnSlashArcEffect(state.pos, state.yaw + Math.PI, 0x38bdf8, 2, '2h');
         if (state.screen === 'arena') {
+          const baseWep = getItemById(profile.equipped[state.activeSlot]) || CATALOG.main[0];
+          const aoeDmg = Math.round(baseWep.dmg * 1.35 * (state.berserkTimer > 0 ? 1.45 : 1.0));
           combatants.forEach(c => {
-            if (c.hp > 0 && c.team !== 'blue' && c.pos.distanceTo(state.pos) <= 4.5) {
-              damageCombatant(c, 34, false);
+            if (c.hp > 0 && c.team === 'red' && c.pos.distanceTo(state.pos) <= 4.6) {
+              damageCombatant(c, aoeDmg, true);
             }
           });
         }
         showToast('🌪️ Whirlwind Cleave!');
       }
-      updateHUD();
-    }
-
-    function damageCombatant(c, dmg, isDot) {
-      if (!c || c.hp <= 0) return;
-      c.hp = Math.max(0, c.hp - dmg);
-      if (c.overhead) c.overhead.redraw(c.hp, c.maxHp);
-      if (!isDot) AudioFX.play('hit');
-      spawnFloatingDamage(c.pos, dmg, c.team === 'red' ? 'text-amber-300' : 'text-sky-300', '-');
-
-      if (c.hp <= 0) {
-        c.rig.root.visible = false;
-        if (c.team === 'red') {
-          profile.kills += 1;
-          state.matchKills += 1;
-          advanceQuest('q1', 1);
-          showToast('⚔️ Defeated ' + c.name + '!');
-        }
-        checkRoundEnd();
-      }
-    }
-
-    function damageLocalPlayer(dmg) {
-      if (state.hp <= 0) return;
-      const stats = computeStats();
-      let taken = dmg;
-      if (state.blocking) {
-        taken = Math.max(2, Math.round(dmg * (1 - stats.blockPct)));
-        AudioFX.play('block');
-        spawnFloatingDamage(state.pos, 'BLOCKED ' + taken, 'text-sky-300', '');
-      } else {
-        AudioFX.play('hit');
-        spawnFloatingDamage(state.pos, taken, 'text-rose-400', '-');
-      }
-      state.hp = Math.max(0, state.hp - taken);
-      updateHUD();
-      if (state.hp <= 0) {
-        showToast('💀 You fell in battle!');
-        checkRoundEnd();
-      }
-    }
-
-    function checkRoundEnd() {
-      const cfg = state.matchConfig;
-      if (!cfg || cfg.roundEnding) return;
-
-      const blueAlive = (state.hp > 0 ? 1 : 0) + combatants.filter(c => c.team === 'blue' && c.hp > 0).length;
-      const redAlive = combatants.filter(c => c.team === 'red' && c.hp > 0).length;
-
-      if (blueAlive === 0 || redAlive === 0) {
-        cfg.roundEnding = true;
-        if (redAlive === 0) {
-          state.blueScore += 1;
-          showToast('🏆 Round Won by Blue Team!');
-        } else {
-          state.redScore += 1;
-          showToast('💥 Round Won by Red Team!');
-        }
-        document.getElementById('blue-score').textContent = state.blueScore;
-        document.getElementById('red-score').textContent = state.redScore;
-
-        setTimeout(() => {
-          if (state.screen !== 'arena' || !state.matchConfig) return;
-          if (state.blueScore >= cfg.targetWins) {
-            finishArenaMatch(true);
-          } else if (state.redScore >= cfg.targetWins) {
-            finishArenaMatch(false);
-          } else {
-            startNewRound();
-          }
-        }, 1400);
-      }
     }
 
     // =========================================================================
-    // 10. 30-SECOND PUBLIC MATCHMAKING & UNRANKED FILL-IN BOTS
+    // 10. 30-SECOND PUBLIC & RANKED MATCHMAKING + UNRANKED FILL-IN BOTS
     // =========================================================================
-    function queueForMatch(modeId, title) {
+    function queueForMatch(modeId, title, isRanked = false) {
       if (state.screen !== 'hub') return;
-      state.queue = { modeId, title, timer: 30.0 };
+      closeModal('play-modes-modal');
+      state.queue = { modeId, title, isRanked: !!isRanked, timer: 30.0 };
       syncLocalRealPlayerEntry();
       const banner = document.getElementById('queue-banner');
       const text = document.getElementById('queue-text');
       if (banner && text) {
-        text.textContent = 'Searching ' + title + '... (30s)';
+        text.textContent = (isRanked ? '🏆 ' : '') + 'Searching ' + title + '... (30s)';
         banner.classList.remove('hidden');
       }
-      showToast('⚔️ Searching for real players in ' + title + ' (30s)...');
+      showToast((isRanked ? '🏆 Ranked Queue: ' : '⚔️ ') + 'Searching for real players in ' + title + ' (30s)...');
     }
 
     function cancelQueue() {
@@ -3095,11 +3205,12 @@
       showToast('Matchmaking cancelled.');
     }
 
-    function startArenaMatch(modeId, title, useFillInBots = false) {
+    function startArenaMatch(modeId, title, useFillInBots = false, isRanked = false) {
       state.queue = null;
       document.getElementById('queue-banner').classList.add('hidden');
       document.getElementById('interact-prompt').classList.add('hidden');
 
+      const baseMode = modeId.replace(/^ranked_/, '');
       const mapByMode = {
         '1v1': 'obsidian',
         '2v2': 'frostspire',
@@ -3107,7 +3218,7 @@
         '4v4': 'sunken_ruins',
         'ffa': 'celestial_spire'
       };
-      const chosenMap = mapByMode[modeId] || 'obsidian';
+      const chosenMap = mapByMode[baseMode] || 'obsidian';
       const mapDisplayName = buildArenaMap(chosenMap);
 
       const teamSizeMap = { '1v1': 1, '2v2': 2, '3v3': 3, '4v4': 4, 'ffa': 1 };
@@ -3117,8 +3228,10 @@
       state.matchKills = 0;
       state.matchConfig = {
         modeId,
+        baseMode,
         title,
-        teamSize: teamSizeMap[modeId] || 1,
+        isRanked: !!isRanked,
+        teamSize: teamSizeMap[baseMode] || 1,
         targetWins: 3,
         roundNum: 0,
         roundTime: 120,
@@ -3130,10 +3243,16 @@
       const pvpStatusEl = document.getElementById('arena-pvp-status');
       if (pvpStatusEl) {
         if (livePeers.length > 0 && !useFillInBots) {
-          pvpStatusEl.textContent = 'LIVE MULTIPLAYER (' + (livePeers.length + 1) + ' PLAYERS)';
-          pvpStatusEl.className = 'text-[8px] font-black text-emerald-300 uppercase tracking-wider mt-0.5';
+          pvpStatusEl.textContent = isRanked
+            ? ('🏆 RANKED PVP (' + (livePeers.length + 1) + ' PLAYERS • +28/-16 RP)')
+            : ('LIVE MULTIPLAYER (' + (livePeers.length + 1) + ' PLAYERS)');
+          pvpStatusEl.className = isRanked
+            ? 'text-[8px] font-black text-purple-300 uppercase tracking-wider mt-0.5'
+            : 'text-[8px] font-black text-emerald-300 uppercase tracking-wider mt-0.5';
         } else {
-          pvpStatusEl.textContent = 'UNRANKED FILL-IN BOTS (EXCLUDED FROM RANKS)';
+          pvpStatusEl.textContent = isRanked
+            ? 'UNRANKED FILL-IN BOTS (+0 RP • EXCLUDED FROM RANKS)'
+            : 'UNRANKED FILL-IN BOTS (EXCLUDED FROM RANKS)';
           pvpStatusEl.className = 'text-[8px] font-black text-amber-300 uppercase tracking-wider mt-0.5';
         }
       }
@@ -3241,7 +3360,7 @@
       // Fill-in bots after 30s timeout with no real player available
       const teamSize = state.matchConfig.teamSize || 1;
       const blueBotCount = Math.max(0, teamSize - 1);
-      const redBotCount = state.matchConfig.modeId === 'ffa' ? 2 : teamSize;
+      const redBotCount = state.matchConfig.baseMode === 'ffa' ? 2 : teamSize;
 
       for (let i = 0; i < blueBotCount; i++) {
         spawnFillInBot('blue', i, blueBotCount);
@@ -3256,14 +3375,28 @@
 
     function finishArenaMatch(won) {
       const cfg = state.matchConfig;
-      const earnedCoins = won ? 85 : 30;
-      const earnedXp = won ? 120 : 45;
+      const isRankedMatch = !!(cfg && cfg.isRanked);
+      const isRealPvpMatch = !!(cfg && !cfg.useFillInBots);
+      const earnedCoins = won ? (isRankedMatch && isRealPvpMatch ? 115 : 85) : 30;
+      const earnedXp = won ? (isRankedMatch && isRealPvpMatch ? 150 : 120) : 45;
       profile.coins += earnedCoins;
       profile.xp += earnedXp;
       if (won) {
         profile.wins += 1;
         advanceQuest('q2', 1);
       }
+
+      const prevRank = getRankInfo(profile.rp);
+      let rpDelta = 0;
+      if (isRankedMatch && isRealPvpMatch) {
+        rpDelta = won ? 28 : -16;
+        profile.rp = Math.max(0, (profile.rp || 0) + rpDelta);
+      }
+      const newRank = getRankInfo(profile.rp);
+      if (newRank.name !== prevRank.name && rpDelta > 0) {
+        showToast('👑 RANK PROMOTION! You reached ' + newRank.icon + ' ' + newRank.name + '!');
+      }
+
       while (profile.xp >= profile.xpNext) {
         profile.xp -= profile.xpNext;
         profile.level += 1;
@@ -3276,11 +3409,32 @@
       AudioFX.play('victory');
       exitGamePointerLock();
 
-      document.getElementById('finish-title').textContent = won ? '🏆 ARENA VICTORY!' : '⚔️ HARD-FOUGHT DUEL';
+      document.getElementById('finish-title').textContent = won
+        ? (isRankedMatch ? '👑 RANKED VICTORY!' : '🏆 ARENA VICTORY!')
+        : (isRankedMatch ? '⚔️ RANKED MATCH COMPLETE' : '⚔️ HARD-FOUGHT DUEL');
       document.getElementById('finish-subtitle').textContent = (cfg ? cfg.title : 'ARENA') + ' • Final Score ' + state.blueScore + ' - ' + state.redScore;
       document.getElementById('finish-coins').textContent = '+' + earnedCoins + ' 🪙';
       document.getElementById('finish-xp').textContent = '+' + earnedXp + ' XP';
       document.getElementById('finish-kills').textContent = profile.kills + ' ⚔️';
+
+      const rpBanner = document.getElementById('finish-rp-banner');
+      const rpDeltaEl = document.getElementById('finish-rp-delta');
+      const rpTierEl = document.getElementById('finish-rp-tier');
+      if (rpBanner && rpDeltaEl && rpTierEl) {
+        if (isRankedMatch) {
+          rpBanner.classList.remove('hidden');
+          if (isRealPvpMatch) {
+            rpDeltaEl.textContent = (rpDelta >= 0 ? ('+' + rpDelta + ' RP') : (rpDelta + ' RP'));
+            rpDeltaEl.className = rpDelta >= 0 ? 'text-sm font-black text-emerald-300' : 'text-sm font-black text-rose-300';
+          } else {
+            rpDeltaEl.textContent = '+0 RP (Unranked Fill-In Match)';
+            rpDeltaEl.className = 'text-sm font-black text-amber-300';
+          }
+          rpTierEl.textContent = newRank.icon + ' ' + newRank.name + ' • ' + newRank.rp + ' RP';
+        } else {
+          rpBanner.classList.add('hidden');
+        }
+      }
 
       state.podiumEmoteId = profile.emotes[0] || 'salute';
       renderVictoryEmoteChoices();
@@ -3292,9 +3446,10 @@
     function playAgainFromFinish() {
       const lastMode = state.matchConfig ? state.matchConfig.modeId : '1v1';
       const lastTitle = state.matchConfig ? state.matchConfig.title : 'PUBLIC 1V1 DUEL';
+      const lastRanked = !!(state.matchConfig && state.matchConfig.isRanked);
       document.getElementById('match-finished-modal').classList.add('hidden');
       returnToHub();
-      queueForMatch(lastMode, lastTitle);
+      queueForMatch(lastMode, lastTitle, lastRanked);
     }
 
     function closeMatchFinishedToHub() {
@@ -3748,10 +3903,87 @@
     }
 
     // QUESTS, LEADERBOARDS & SETTINGS MODALS
+    function renderPlayModesModal() {
+      const body = document.getElementById('play-modes-body');
+      if (!body) return;
+      const rankInfo = getRankInfo(profile.rp);
+      const nextText = rankInfo.nextTier
+        ? ('Next Tier: ' + rankInfo.nextTier.icon + ' ' + rankInfo.nextTier.name + ' (' + rankInfo.nextTier.minRp + ' RP)')
+        : 'Maximum Tier Reached!';
+      const tierPct = rankInfo.nextTier
+        ? Math.min(100, Math.round(((rankInfo.rp - rankInfo.minRp) / (rankInfo.nextTier.minRp - rankInfo.minRp)) * 100))
+        : 100;
+
+      const rankedCards = RANKED_PODIUM_STATUES.map(spec => `
+        <div class="p-3.5 rounded-2xl bg-purple-950/35 border border-purple-400/45 flex flex-col justify-between gap-2.5">
+          <div>
+            <div class="flex items-center justify-between text-[10px] font-black text-purple-300">
+              <span>COMPETITIVE</span>
+              <span>+28 / -16 RP</span>
+            </div>
+            <div class="text-sm font-black text-white mt-1">${spec.title}</div>
+            <div class="text-[11px] text-slate-300 mt-0.5">Real-Player Ranked Matchmaking • 30s Queue</div>
+          </div>
+          <button onclick="queueForMatch('${spec.mode}', '${spec.title}', true)"
+            class="w-full py-2 rounded-xl bg-gradient-to-r from-purple-500 to-amber-500 hover:opacity-95 text-slate-950 font-black text-xs transition shadow-lg">
+            👑 QUEUE RANKED
+          </button>
+        </div>
+      `).join('');
+
+      const publicCards = PODIUM_STATUES.map(spec => `
+        <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between gap-2">
+          <div>
+            <div class="text-[10px] font-black text-sky-400">CASUAL PVP</div>
+            <div class="text-xs font-black text-white mt-0.5">${spec.title}</div>
+          </div>
+          <button onclick="queueForMatch('${spec.mode}', '${spec.title}', false)"
+            class="w-full py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/35 border border-sky-400/50 text-sky-200 font-black text-[11px] transition">
+            ⚔️ QUEUE PUBLIC
+          </button>
+        </div>
+      `).join('');
+
+      body.innerHTML = `
+        <div class="p-4 rounded-2xl bg-slate-900/95 border border-purple-400/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-2xl">
+              ${rankInfo.icon}
+            </div>
+            <div>
+              <div class="text-xs font-black text-purple-300 uppercase">CURRENT COMPETITIVE RANK</div>
+              <div class="text-base font-black text-white">${rankInfo.name} • <span class="text-amber-300">${rankInfo.rp} RP</span></div>
+              <div class="text-[11px] text-slate-400">${nextText}</div>
+            </div>
+          </div>
+          <div class="w-full sm:w-56">
+            <div class="flex justify-between text-[10px] font-black text-slate-300 mb-1">
+              <span>${rankInfo.name}</span>
+              <span>${tierPct}%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full bg-gradient-to-r from-purple-400 to-amber-400" style="width: ${tierPct}%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-black text-amber-300 uppercase tracking-wider mb-2">👑 RANKED COMPETITIVE MODES</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">${rankedCards}</div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-black text-sky-300 uppercase tracking-wider mb-2">⚔️ PUBLIC CASUAL MODES</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">${publicCards}</div>
+        </div>
+      `;
+    }
+
     function openModal(modalId) {
       exitGamePointerLock();
       if (modalId === 'quests-modal') renderQuests();
       if (modalId === 'leaderboards-modal') renderLeaderboardsModal();
+      if (modalId === 'play-modes-modal') renderPlayModesModal();
       if (modalId === 'settings-modal') {
         const inp = document.getElementById('player-name-input');
         if (inp) inp.value = profile.name;
@@ -3847,7 +4079,7 @@
     const pointerLockSupported = typeof canvas.requestPointerLock === 'function';
 
     function isAnyModalOpen() {
-      const ids = ['shop-modal', 'armory-modal', 'match-finished-modal', 'quests-modal', 'settings-modal', 'emote-wheel-overlay', 'leaderboards-modal'];
+      const ids = ['shop-modal', 'armory-modal', 'match-finished-modal', 'quests-modal', 'settings-modal', 'emote-wheel-overlay', 'leaderboards-modal', 'play-modes-modal'];
       return ids.some(id => {
         const el = document.getElementById(id);
         return el && !el.classList.contains('hidden');
@@ -3978,7 +4210,7 @@
 
       if (code === 'Escape') {
         if (isAnyModalOpen()) {
-          ['shop-modal', 'armory-modal', 'quests-modal', 'settings-modal', 'leaderboards-modal'].forEach(closeModal);
+          ['shop-modal', 'armory-modal', 'quests-modal', 'settings-modal', 'leaderboards-modal', 'play-modes-modal'].forEach(closeModal);
           toggleEmoteWheel(false);
         } else if (isCursorEngaged()) {
           exitGamePointerLock();
@@ -4067,7 +4299,7 @@
 
         if (readyOpponent) {
           showToast('✅ Real Opponent Found (' + readyOpponent.name + ')! Starting Match...');
-          startArenaMatch(state.queue.modeId, state.queue.title, false);
+          startArenaMatch(state.queue.modeId, state.queue.title, false, state.queue.isRanked);
         } else if (peerConnecting) {
           if (qText) {
             qText.textContent = 'Waiting for Real Player to Connect in ' + state.queue.title + '...';
@@ -4075,11 +4307,11 @@
         } else {
           state.queue.timer -= dt;
           if (qText) {
-            qText.textContent = 'Searching ' + state.queue.title + '... (' + Math.max(0, Math.ceil(state.queue.timer)) + 's)';
+            qText.textContent = (state.queue.isRanked ? '🏆 ' : '') + 'Searching ' + state.queue.title + '... (' + Math.max(0, Math.ceil(state.queue.timer)) + 's)';
           }
           if (state.queue.timer <= 0) {
             showToast('⏳ 30s elapsed with no real player — starting with unranked fill-in bots!');
-            startArenaMatch(state.queue.modeId, state.queue.title, true);
+            startArenaMatch(state.queue.modeId, state.queue.title, true, state.queue.isRanked);
           }
         }
       }
