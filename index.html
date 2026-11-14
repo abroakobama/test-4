@@ -2261,10 +2261,10 @@
     }
 
     // 5-MONUMENT HALL OF CHAMPIONS LEADERBOARD BASILICA (WINS, KILLS, LEVEL, COINS, DIAMONDS)
-    function createLeaderboardMonument(x, z, cat, worldX, worldZ) {
+    function createLeaderboardMonument(x, z, cat, worldX, worldZ, focusX, focusZ) {
       const g = new THREE.Group();
       g.position.set(x, 0, z);
-      g.rotation.y = Math.atan2(-worldX, -(worldZ - 3));
+      g.rotation.y = Math.atan2(focusX - worldX, focusZ - worldZ);
 
       const stone = polyMat(0x1e293b, { roughness: 0.5, metalness: 0.42 });
       const trim = polyMat(cat.accentInt, { emissive: cat.accentInt, emissiveIntensity: 0.65, metalness: 0.82 });
@@ -2292,26 +2292,28 @@
       return g;
     }
 
-    function createHallOfChampionsBasilica(x, z) {
+    function createHallOfChampionsBasilica(centerX, centerZ) {
       const g = new THREE.Group();
-      g.position.set(x, 0, z);
+      g.position.set(0, 0, 0);
 
-      const specs = [
-        { dx: -2.6, dz: -6.8, cat: LEADERBOARD_CATEGORIES[0] }, // Most Wins
-        { dx: -0.3, dz: -3.5, cat: LEADERBOARD_CATEGORIES[1] }, // Most Kills
-        { dx:  0.8, dz:  0.0, cat: LEADERBOARD_CATEGORIES[2] }, // Highest Level
-        { dx: -0.3, dz:  3.5, cat: LEADERBOARD_CATEGORIES[3] }, // Most Coins
-        { dx: -2.6, dz:  6.8, cat: LEADERBOARD_CATEGORIES[4] }  // Most Diamonds
-      ];
+      // Smooth circular arc positioned directly along the blue floor ring (r = 18.475), facing inward toward (centerX, centerZ)
+      const arcRadius = 18.475;
+      const midAngle = -0.14;
+      const angleStep = 0.205;
 
-      specs.forEach(s => {
-        const monument = createLeaderboardMonument(s.dx, s.dz, s.cat, x + s.dx, z + s.dz);
+      LEADERBOARD_CATEGORIES.forEach((cat, idx) => {
+        const theta = midAngle + (idx - 2) * angleStep;
+        const worldX = centerX + Math.cos(theta) * arcRadius;
+        const worldZ = centerZ + Math.sin(theta) * arcRadius;
+        const monument = createLeaderboardMonument(worldX, worldZ, cat, worldX, worldZ, centerX, centerZ);
         g.add(monument);
-        addObstacle(x + s.dx, z + s.dz, 1.45);
+        addObstacle(worldX, worldZ, 1.45);
       });
 
+      const bannerX = centerX + Math.cos(midAngle) * arcRadius;
+      const bannerZ = centerZ + Math.sin(midAngle) * arcRadius;
       const sign = createBannerSign('🏆 HALL OF CHAMPIONS LEADERBOARDS [F]', '#1e1b4b', '#fbbf24');
-      sign.position.set(-0.4, 4.75, 0);
+      sign.position.set(bannerX, 3.95, bannerZ);
       g.add(sign);
 
       updateHubLeaderboardTexture();
@@ -2458,10 +2460,10 @@
       });
 
       // 5-Monument Hall of Champions Leaderboards (Wins, Kills, Level, Coins & Diamonds)
-      worldGroup.add(createHallOfChampionsBasilica(16.8, -6));
+      worldGroup.add(createHallOfChampionsBasilica(0, 0));
       hubInteractables.push({
-        pos: new THREE.Vector3(12.2, 0, -6),
-        radius: 5.2,
+        pos: new THREE.Vector3(15.5, 0, -2.2),
+        radius: 6.8,
         label: 'View All Leaderboards (Wins, Kills, Level, Coins & Diamonds)',
         action: () => openModal('leaderboards-modal')
       });
